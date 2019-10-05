@@ -36,15 +36,22 @@ target 'ZoeLACoor' do
 
   
 
-  pod 'RNFirebase', :path => '../node_modules/react-native-firebase'
+  # pod 'RNFirebase', :path => '../node_modules/react-native-firebase'
 
-  pod 'appcenter', :path => '../node_modules/appcenter'
+  # pod 'appcenter', :path => '../node_modules/appcenter'
 
-  pod 'appcenter-crashes', :path => '../node_modules/appcenter-crashes'
+  # pod 'appcenter-crashes', :path => '../node_modules/appcenter-crashes'
 
-  pod 'appcenter-analytics', :path => '../node_modules/appcenter-analytics'
+  # pod 'appcenter-analytics', :path => '../node_modules/appcenter-analytics'
 
   pod 'Firebase/Core', '~> 6.6.0'
+  pod 'Firebase/Auth'
+
+  # pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
+  pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
+
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
 
   target 'ZoeLACoorTests' do
     inherit! :search_paths
