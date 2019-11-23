@@ -2,8 +2,18 @@ import React from 'react'
 import { Header, Icon } from 'react-native-elements';
 import { Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { Firebase } from '@api';
+import { useGlobal } from '@store'
 
 const HeaderTitle = ({ navigation }) => {
+  const [globalState, globalActions] = useGlobal();
+  // const { user, setOrganization } = globalState
+
+  const handleLogout = async () => {
+    Firebase.shared.signOut()
+    globalActions.user.setUser(null)
+    navigation.popToTop()
+  }
   return (<Header
     ViewComponent={LinearGradient} // Don't forget this!
     linearGradientProps={{
@@ -22,15 +32,16 @@ const HeaderTitle = ({ navigation }) => {
       name='cog'
       type='font-awesome'
       color='white'
-      onPress={() =>  Alert.alert(
-        'Alert!',
-        'Called the settings!',
+      onPress={() => Alert.alert(
+        'Settings',
+        '',
         [
-            { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
-            // { text: 'Continue', onPress: () => this.skipConfirm() },
+          { text: 'Sign Out', onPress: () => handleLogout() },
+          { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+
         ],
         { cancelable: false }
-    )} />}
+      )} />}
     centerComponent={{ text: 'Organization', style: { fontSize: 23, color: '#fff' } }}
     containerStyle={{
       backgroundColor: '#3D6DCC',

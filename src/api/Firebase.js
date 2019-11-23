@@ -1,9 +1,12 @@
 import firebase from "react-native-firebase";
 import uuid from 'uuid';
+import uploadPhoto from './uploadPhoto';
 
 
 
 const collectionName = 'users';
+const collectionOrg = 'organizations'
+
 const queueList = 'queueList'
 const authorized = 'authorizedStaff'
 const timeTrack = 'timeTrack'
@@ -12,20 +15,44 @@ class Firebase {
 
   constructor() {
     // Listen for auth
-    firebase.auth().onAuthStateChanged(async user => {
-      if (!user) {
-        await firebase.auth().signInAnonymously();
-      }
-    });
+
     // Making sure we get timeStamps
     firebase.firestore().settings({ timestampsInSnapshots: true });
 
     //Android specific notifications setup channel
-    const channel = new firebase.notifications.Android.Channel('CG-channel', 'Notification Channel', firebase.notifications.Android.Importance.Max)
-      .setDescription('Crazy Girls notifications');
+    const channel = new firebase.notifications.Android.Channel('ZOECoor-channel', 'Notification Channel', firebase.notifications.Android.Importance.Max)
+      .setDescription('Zoe LA Stage Countdown notifications');
 
     // Create the channel
     firebase.notifications().android.createChannel(channel);
+  }
+
+  async signOut() {
+    await firebase.auth().signOut()
+    return
+  }
+
+  async checkCurrentUser() {
+    return this.userCollection.doc(this.uid)
+      .get()
+      .then((doc) => {
+        // console.log('this is the data', doc.data())
+        if (!doc.exists) {
+          return Promise.reject(new Error('User does not exist!'))
+        } else {
+          const user = doc.data()
+          // resolve(user)
+          return user
+
+        }
+      })
+      .catch(error => {
+        if (error.message.includes('does not exist')) {
+          console.log(error.message);
+        } else {
+          console.log('Transaction failed: ', error);
+        }
+      });
   }
 
   sendPhoneNumber = (phoneNumber) => {
@@ -43,6 +70,17 @@ class Firebase {
     });
   }
 
+  checkForUserUID = async () => {
+    const doc = await this.userCollection.doc(this.uid).get()
+    if (!doc.exists) {
+      return false
+      // console.log('user does not exist!')
+    }
+
+    return doc.data()
+
+  }
+
   getCurrentNotificationToken = () => {
     firebase.messaging().requestPermission();
     // gets the device's push token
@@ -58,36 +96,7 @@ class Firebase {
 
   updateNotificationToken = (token) => {
     // alert('The token should be updated in firebase')
-    this.collection.doc(this.uid).update({ pushToken: token });
-  }
-
-  linePassPayNotification = async () => {
-    return new Promise(resolve => {
-
-      const ref = this.notificationCollection.doc(this.timestamp.toString())
-
-      firebase.firestore()
-        .runTransaction(async transaction => {
-
-          transaction.set(ref, {
-            uid: this.uid,
-            title: "Crazy Girls!",
-            message: "Meet with DJ immediately for line pass pay!",
-            timeStamp: this.timestamp
-          });
-          const userRef = await transaction.get(ref)
-          return userRef
-
-        })
-        .then(done => {
-          console.log('the transaction is done to send the notification', done)
-          resolve(done)
-        })
-        .catch(err => {
-          console.log('there was an error sending the notification', err)
-          return resolve(null)
-        })
-    })
+    this.userCollection.doc(this.uid).update({ pushToken: token });
   }
 
   checkUserState = () => {
@@ -103,7 +112,6 @@ class Firebase {
   };
 
   confirmCode = (codeInput, confirmResult) => {
-
     if (confirmResult && codeInput.length) {
       return new Promise(resolve => {
         confirmResult.confirm(codeInput)
@@ -122,54 +130,104 @@ class Firebase {
     }
   };
 
-  checkForPhone = (phoneNumber) => {
-    return new Promise(resolve => {
-      //This queries through all collections to find number
-      const number = phoneNumber
-      const checkPhone = this.authorize
+  retrieveOrgs = async () => {
+    const docs = await this.orgCollection.get()
+    if (docs.empty) {
+      return [{ name: 'No Organizations!' }]
+    }
 
-      checkPhone.where("number", "==", number).get()
-        .then(snapshot => {
-          if (snapshot.empty) {
-            resolve(null)
-            return
-          }
+    const array = docs.docs.map((doc) => {
 
-          resolve(snapshot.docs[0])
-        })
-
+      const dat = doc.data()
+      const data = {
+        ...dat
+      }
+      data.id = doc.id
+      return data
     })
-  }
 
-  signOut = () => {
-    return new Promise(resolve => {
-      firebase.auth().signOut();
-      resolve()
-    })
+    return array
 
   }
+  async retrieveOrganization() {
+    return this.orgCollection.where('users', 'array-contains', this.uid).get()
+      .then(docs => {
+        if (docs.empty) {
+          // alert('You have not chosen an organization!')
+          return ''
+        }
+        return docs.docs[0].id
+      })
+      .catch(error => {
+        console.log('Organization retrieval failed', error.message)
+      });
+    // console.log('this should be the organization id', orgs.docs[0].id)
+  }
 
-  sendEmailWithPassword = (email) => {
-    return new Promise(resolve => {
-      firebase.auth().sendPasswordResetEmail(email)
-        .then(() => {
-          console.warn('Email with new password has been sent');
-          resolve(true);
-        }).catch(error => {
-          switch (error.code) {
-            case 'auth/invalid-email':
-              console.warn('Invalid email address format');
-              break;
-            case 'auth/user-not-found':
-              console.warn('User with this email does not exist');
-              break;
-            default:
-              console.warn('Check your internet connection');
-          }
-          resolve(false);
-        });
+  retrieveSpeakers = async () => {
+
+    const orgs = await this.orgCollection.where('users', 'array-contains', this.uid).get()
+    // console.log('this should be the organization id', orgs.docs[0].id)
+    if (orgs.empty) {
+      alert('You have not chosen an organization!')
+      return []
+    }
+    const collectionRef = await firebase.firestore().doc(`${collectionOrg}/${orgs.docs[0].id}`).collection(`speakerQueue`).get();
+    // console.log('this is the speakerlist', collectionRef.docs[0].data())
+
+    // const collectionRef = await firebase.firestore().doc(`${collectionOrg}/${orgs.docs[0].id}/speakerQueue/XhpnkVE4tezXrONFejJz`).get();
+    // console.log('this is the speaker single', collectionRef.data())
+    const array = collectionRef.docs.map((doc) => {
+
+      const dat = doc.data()
+      const data = {
+        ...dat
+      }
+      data.id = doc.id
+      return data
     })
-  };
+
+    return array
+
+  }
+
+  addNewSpeaker = async (data) => {
+    const orgs = await this.orgCollection.where('users', 'array-contains', this.uid).get()
+    console.log('this should be the organization id', orgs.docs[0].id)
+    if (orgs.empty) {
+      alert('You have not chosen an organization!')
+      return []
+    }
+    const documentRef = await firebase.firestore().doc(`${collectionOrg}/${orgs.docs[0].id}`).collection(`speakerQueue`).add({
+      // name: 'Ada Lovelace',
+      // age: 30,
+      data
+    });
+  }
+
+  deleteSpeaker = async (data) => {
+
+    const orgs = await this.orgCollection.where('users', 'array-contains', this.uid).get()
+    console.log('this should be the organization id', orgs.docs[0].id)
+    if (orgs.empty) {
+      alert('You have not chosen an organization!')
+      return []
+    }
+    const documentRef = await firebase.firestore().doc(`${collectionOrg}/${orgs.docs[0].id}/speakerQueue/${data}`).delete();
+  }
+
+  addUserToOrg = async (orgUID, currUsers) => {
+    await this.orgCollection.doc(orgUID).update({ users: currUsers })
+    if (currUsers.includes(this.uid)) {
+      await this.userCollection.doc(this.uid).update({ setOrganization: true })
+      return true
+    } else {
+      await this.userCollection.doc(this.uid).update({ setOrganization: false })
+      return false
+    }
+  }
+
+  findOrganizations
 
   getAllActiveUsers = () => {
     return new Promise(resolve => {
@@ -192,120 +250,82 @@ class Firebase {
     });
   }
 
-  createDJCheckInUser = async (role) => {
-    return new Promise(resolve => {
-
-      const ref = this.collection.doc(this.uid)
-
-      firebase.firestore()
-        .runTransaction(async transaction => {
-          const deviceInfo = getDeviceInfo()
-          const userRef = await transaction.get(ref)
-
-          transaction.set(ref, {
-            role: role,
-            checkIns: 0,
-            skips: 0,
-            isCheckedIn: false,
-            isTony: false,
-            number: this.number,
-            uid: this.uid,
-            timestamp: this.timestamp,
-            device: deviceInfo
-          });
-          return userRef
-        })
-        .then(done => {
-          resolve(done)
-        })
-        .catch(err => { return resolve(null) })
-    })
-  }
-
-  // Upload Data
+  // Update Data
   uploadPhotoAsync = async uri => {
-    const path = `${this.collection}/${this.uid}/${uuid.v4()}.jpg`;
+    const path = `${this.userCollection}/${this.uid}/${uuid.v4()}.jpg`;
     return uploadPhoto(uri, path);
   };
 
   updateUser = async (user, image) => {
+    const doc = await this.userCollection.doc(this.uid).get()
+    const updateDic = {
+      uid: this.uid,
+      number: this.number,
+      ...user,
+    }
 
-    return new Promise(resolve => {
-      const ref = this.collection.doc(this.uid)
+    // Upload image and add if there is one
+    if (image && image.path) {
+      const remoteUri = await this.uploadPhotoAsync(image.path);
+      updateDic.image = remoteUri
+    }
 
-      firebase.firestore()
-        .runTransaction(async transaction => {
+    if (doc.exists) {
 
-          const deviceInfo = getDeviceInfo()
-          const userRef = await transaction.get(ref)
+      await this.userCollection.doc(this.uid).update(updateDic)
+      const user = await this.userCollection.doc(this.uid).get()
+      console.log('the user update', user)
+      return user.data()
 
-          // set or update user
-          if (!userRef.exists) {
-            if (image != null) {
-              const remoteUri = await this.uploadPhotoAsync(image.path);
+    } else {
+      await this.userCollection.doc(this.uid).set(updateDic)
+      const user = await this.userCollection.doc(this.uid).get()
+      console.log('the user set', user)
+      return user.data()
+    }
+  }
 
-              transaction.set(ref, {
-                uid: this.uid,
-                number: this.number,
-                rating: 1,
-                timestamp: this.timestamp,
-                ...user,
-                avatar: remoteUri,
-                passesToday: 0,
-                device: deviceInfo
-              });
-              return userRef
-            } else {
-              transaction.set(ref, {
-                uid: this.uid,
-                number: this.number,
-                timestamp: this.timestamp,
-                ...user,
-                passesToday: 0,
-                device: deviceInfo
-              });
-              return userRef
-            }
-          } else
-            if (image != null) {
-              const remoteUri = await this.uploadPhotoAsync(image.path);
-              transaction.update(ref, {
-                uid: this.uid,
-                number: this.number,
-                ...user,
-                passesToday: 0,
-                avatar: remoteUri,
-                device: deviceInfo
-              });
-              return userRef
-            } else {
-              transaction.update(ref, {
-                uid: this.uid,
-                number: this.number,
-                ...user,
-                passesToday: 0,
-                device: deviceInfo
-              });
-            }
-          return userRef
+  updateOrganization= async (uid, data) => {
+    return await this.orgCollection.doc(uid).update(data)
+    //   const user = await this.userCollection.doc(this.uid).get()
+    //   console.log('the user update', user)
+    //   return user.data()
 
-        })
-        .then(result => {
-          if (result) {
-            resolve(true)
-          } else { resolve(false) }
-        })
-        .catch(err => console.log('There was an error updating the server:', err.message))
+    // const doc = await this.orgCollection.doc(uid).get()
+    // const updateDic = {
+    //   uid: this.uid,
+    //   number: this.number,
+    //   ...user,
+    // }
 
+    // // Upload image and add if there is one
+    // if (image && image.path) {
+    //   const remoteUri = await this.uploadPhotoAsync(image.path);
+    //   updateDic.image = remoteUri
+    // }
 
+    // if (doc.exists) {
 
-    });
+    //   await this.userCollection.doc(this.uid).update(updateDic)
+    //   const user = await this.userCollection.doc(this.uid).get()
+    //   console.log('the user update', user)
+    //   return user.data()
 
+    // } else {
+    //   await this.userCollection.doc(this.uid).set(updateDic)
+    //   const user = await this.userCollection.doc(this.uid).get()
+    //   console.log('the user set', user)
+    //   return user.data()
+    // }
   }
 
   // Helpers
-  get collection() {
+  get userCollection() {
     return firebase.firestore().collection(collectionName);
+  }
+
+  get orgCollection() {
+    return firebase.firestore().collection(collectionOrg);
   }
 
   get authorize() {
@@ -322,10 +342,6 @@ class Firebase {
 
   get adminCheckInCollection() {
     return firebase.firestore().collection(adminCheckInList);
-  }
-
-  get reviewsCollection() {
-    return firebase.firestore().collection(reviewsName);
   }
 
   get timeCollection() {
@@ -359,4 +375,5 @@ class Firebase {
 
 //Makes the same instance stay in memory
 Firebase.shared = new Firebase();
+
 export default Firebase;

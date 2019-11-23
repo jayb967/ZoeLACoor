@@ -15,17 +15,19 @@ const HeaderTitle = ({ navigation }) => {
       name='th-list'
       type='font-awesome'
       color='white'
-      onPress={() => navigation.push('Organization')} />}
+      onPress={() => navigation.push('Organization1')} />}
+      leftContainerStyle={{marginLeft: 30}}
     rightComponent={<Icon
       // raised
-      name='plus'
+      name='eye'
       type='font-awesome'
       color='white'
-      onPress={() => navigation.push('Login')} />}
+      onPress={() => console.log('plus sign pressed!')} />}
+      rightContainerStyle={{marginRight: 30}}
     centerComponent={{ text: 'ZOE T-Minus', style: { fontSize: 23, color: '#fff' } }}
     containerStyle={{
       backgroundColor: '#3D6DCC',
-      justifyContent: 'space-around',
+      justifyContent: 'space-evenly',
     }}
   />)
 }

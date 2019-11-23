@@ -44,14 +44,24 @@ target 'ZoeLACoor' do
 
   # pod 'appcenter-analytics', :path => '../node_modules/appcenter-analytics'
 
-  pod 'Firebase/Core', '~> 6.6.0'
+  pod 'Firebase/Core'
   pod 'Firebase/Auth'
+  pod 'Firebase/Firestore'
+  pod 'Firebase/Messaging'
+  pod 'Firebase/Storage'
 
   # pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
   pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
 
   pod 'RNSVG', :path => '../node_modules/react-native-svg'
+
+
+  # pod 'appcenter-push', :path => '../node_modules/appcenter-push'
+
+  pod 'CodePush', :path => '../node_modules/react-native-code-push'
+
+  pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
 
   target 'ZoeLACoorTests' do
     inherit! :search_paths

@@ -5,8 +5,8 @@ import { View, Text, StyleSheet } from 'react-native'
 
 const TimeRange = props => {
     return (<View style={styles.service}>
-        <Text style={styles.serviceTime}>Service Time</Text>
-        <Text style={styles.text9}>12:03pm - 1:30pm</Text>
+        {/* <Text style={styles.serviceTime}>Service Time</Text>
+        <Text style={styles.text9}>12:03pm - 1:30pm</Text> */}
       </View>)
 }
 const styles = StyleSheet.create({

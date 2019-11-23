@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-
+import React, { useEffect, useState } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -7,63 +6,116 @@ import {
     View,
     Text,
     StatusBar,
-    Image
+    Image,
+    ActivityIndicator
 } from 'react-native';
 import { Card, ListItem, Button, Icon } from 'react-native-elements'
-
 import Svg, { Ellipse } from "react-native-svg";
 
+
+import { Firebase } from '@api';
+import { useGlobal } from '@store'
 import { Header } from './components'
 
 
+
 const OrganizationList = ({ navigation }) => {
-   
-    // useEffect(()=> {
-    //     console.log('inside th Organization list')
-    // })
+    const [organizations, setOrganizations] = useState([])
+    const [globalState, globalActions] = useGlobal();
+    const { user, setOrganization } = globalState
+
+    useEffect(() => {
+        organizations.length === 0 && getOrganizations()
+        
+    })
+
+    async function getOrganizations() {
+        const orgs = await Firebase.shared.retrieveOrgs()
+        setOrganizations(orgs)
+    }
+
+    const doesContainUser = (org) => {
+        if (org.users.length == 0) return false
+        let present = false
+        const uid = Firebase.shared.uid
+        org.users.forEach((item) => {
+            if (item === uid) {
+                present = true
+            }
+        })
+        return present
+    }
+
+    async function handleAddUser(org) {
+        let users = org.users || []
+        const uid = Firebase.shared.uid
+        if (users.includes(uid)) {
+            const asdf = users.filter((item) => {
+                return item != uid
+            })
+            users = asdf
+        }
+        else {
+            if (setOrganization) {
+                alert('You are already a part of an organization!')
+                return
+            } else {
+                users.push(uid)
+            }
+        }
+
+        const added = await Firebase.shared.addUserToOrg(org.id, users)
+        globalActions.user.setOrganization(added)
+
+        getOrganizations()
+    }
+
     return (
         <>
-            {/* <StatusBar barStyle="dark-content" /> */}
-            {/* <SafeAreaView> */}
-                <View>
-                    <Svg viewBox="50 -80 400 400" style={styles.ellipse}>
-                        <Ellipse
-                            strokeWidth={1}
-                            fill="gray"
-                            cx={430}
-                            cy={378}
-                            rx={429}
-                            ry={378}
-                        />
-                    </Svg>
-                    <ScrollView
-                        contentInsetAdjustmentBehavior="automatic"
-                        style={styles.scrollView}>
-                        <Header navigation={navigation} />
-                        <View style={styles.body}>
-                            <Card
-                                title='HELLO WORLD'
-                                image={require('../../assets/images/avatar1.jpg')}
-                                >
-                                <Text style={{ marginBottom: 10 }}>
-                                    The idea with React Native Elements is more about component structure than actual design.
-                                </Text>
+            <View style={styles.body}>
+                <Svg viewBox="50 -80 400 400" style={styles.ellipse}>
+                    <Ellipse
+                        strokeWidth={1}
+                        fill="gray"
+                        cx={430}
+                        cy={378}
+                        rx={429}
+                        ry={378}
+                    />
+                </Svg>
+                <ScrollView
+                    contentInsetAdjustmentBehavior="automatic"
+                    style={styles.scrollView}>
+                    <Header navigation={navigation} />
+                    <View >
+                        {organizations.length < 1
+                            ? <ActivityIndicator size="large" style={styles.spinner} color='white' />
+                            : organizations.map((org, i) => <Card
+                                key={i}
+                                title={org.organization}
+                                image={{ uri: org.image }}
+                                containerStyle={{
+                                    borderRadius: 12,
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 5, height: 5 },
+                                    shadowOpacity: 0.6,
+                                    shadowRadius: 6,
+                                    margin: 20,
+                                    borderWidth: doesContainUser(org) ? 2 : 0,
+                                    borderColor: doesContainUser(org) ? 'rgba(101,33,108 ,100)' : 'white'
+                                }}
+                            >
                                 <Button
-                                    icon={<Icon name='code' color='#ffffff' />}
-                                    buttonStyle={{ borderRadius: 0, marginLeft: 0, marginRight: 0, marginBottom: 0 }}
-                                    title='VIEW NOW' />
-                            </Card>
-                            <Text>Aloo</Text>
-                            {/* <TimeRange/>
-                            <TimeLeft />
-                            <SpeakerList /> */}
-                        </View>
-                    </ScrollView>
-                </View>
-            {/* </SafeAreaView> */}
+                                    // icon={<Icon name='apartment' color='#ffffff' />}
+                                    onPress={() => handleAddUser(org)}
+                                    buttonStyle={{ borderRadius: 12, marginLeft: 20, marginRight: 20, marginBottom: 0, backgroundColor: 'rgba(101,33,108 ,100)' }}
+                                    title={doesContainUser(org) ? 'Leave' : 'Join'} />
+                            </Card>)}
+                    </View>
+                </ScrollView>
+            </View>
         </>
     )
-
 }
 
 const styles = StyleSheet.create({
@@ -74,5 +126,13 @@ const styles = StyleSheet.create({
         height: 757,
         position: "absolute"
     },
+    body: {
+        height: '100%',
+        width: '100%'
+    },
+    scrollView: {
+        height: '100%',
+        width: '100%'
+    }
 })
 export default OrganizationList;

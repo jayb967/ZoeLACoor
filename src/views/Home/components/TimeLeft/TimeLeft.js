@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     View,
     Text,
@@ -7,12 +7,35 @@ import {
     Image,
 } from 'react-native'
 import Svg, { Ellipse, Defs, LinearGradient, Stop } from "react-native-svg";
-
+import { Input } from 'react-native-elements';
 import { Center } from "@builderx/utils";
 
 
 
 const TimeLeft = props => {
+
+    const { name, changeName, image } = props
+    const [updatedName, setUpdatedName] = useState(name || '')
+
+    const [nameTap, setNameTap] = useState(false)
+    const input = React.createRef();
+
+    const handleName = (val) => {
+        
+        changeName && changeName(val)
+        setUpdatedName(val)
+    }
+
+    const handleTap = () => {
+        setNameTap(!nameTap)
+    }
+
+    useEffect(()=> {
+        if(updatedName) return;
+        setUpdatedName(name)
+    }, [name])
+
+
     return (
         <View style={styles.userInfo}>
             <View
@@ -26,7 +49,7 @@ const TimeLeft = props => {
                 ]}
             >
 
-                <TouchableOpacity style={styles.button2}>
+                <TouchableOpacity style={styles.button2} onPress={() => handleTap()}>
                     <View
                         style={[
                             styles.stack,
@@ -48,14 +71,32 @@ const TimeLeft = props => {
                                 ry={147}
                             />
                         </Svg>
-                        <Center horizontal>
-                            <Text style={styles.onStageText}>On Stage</Text>
+                        <Center horizontal >
+                            <Text style={styles.onStageText}>Next On Stage</Text>
+                            {nameTap
+                                ? <View style={styles.timeLeft2}>
+                                    <Input
+                                        placeholder='Type Name Here'
+                                        label="Name"
+                                        value={updatedName}
+                                        ref={input}
+                                        onChangeText={(text) => handleName(text)}
+                                    />
+                                </View>
+                                : <Text style={styles.timeLeft}>{updatedName}</Text>}
                         </Center>
-                        <Text style={styles.timeLeft}>T - 25 Secs</Text>
+
+                        {/* {nameTap
+                            ? <Input
+                            style={styles.timeLeft}
+                                placeholder={name}
+                                onChange={(event) => handleName(event.target.value)}
+                            />
+                            : <Text style={styles.timeLeft}>{name}</Text>} */}
                     </View>
                 </TouchableOpacity>
                 <Image
-                    source={require('../../../../assets/images/avatar.png')}
+                    source={image ? {uri: image} : require('../../../../assets/images/avatar.png')}
                     resizeMode="cover"
                     style={styles.avatar}
                 />
@@ -167,11 +208,25 @@ const styles = StyleSheet.create({
         color: "black",//rgba(221,56,56,100)
         position: "absolute",
         right: 0,
-        fontSize: 40,
+        fontSize: 50,
         fontWeight: '700',
         //   fontFamily: "roboto-regular",
         textAlign: "center",
         top: 125
+    },
+    timeLeft2: {
+        left: 30,
+        color: "black",//rgba(221,56,56,100)
+        position: "absolute",
+        right: 0,
+        fontSize: 50,
+        fontWeight: '700',
+        //   fontFamily: "roboto-regular",
+        textAlign: "center",
+        alignSelf: 'center',
+        top: 125,
+        width: '80%',
+
     },
     avatar: {
         top: 0,

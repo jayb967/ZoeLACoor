@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
-import LinearGradient from 'react-native-linear-gradient';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native";
 import { Overlay } from 'react-native-elements';
+// https://github.com/kohver/react-native-touchable-scale
+
+import { SpeakerItem } from './components'
 
 const SpeakerList = props => {
     const [isVisible, setIsVisible] = useState(false)
+    const { changeColor } = props
+    const speakers = ['green', 'yellow', 'red']
 
     return (
         <View style={styles.speakerList}>
@@ -13,120 +17,32 @@ const SpeakerList = props => {
                 windowBackgroundColor="rgba(255, 255, 255, .5)"
                 overlayBackgroundColor="white"
                 height={200}
-                // fullScreen
+            // fullScreen
             >
                 <View>
-                <TouchableOpacity
-                    onPress={() => setIsVisible(false)}
-                    style={styles.button3}
-                ><Text style={styles.buttonTextWhite}>Set Next</Text></TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => setIsVisible(false)}
-                    style={styles.button3}
-                ><Text style={styles.buttonTextWhite}>Add 10 Seconds</Text></TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => setIsVisible(false)}
-                    style={styles.button2}
-                ><Text style={styles.buttonText}>Cancel</Text></TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setIsVisible(false)}
+                        style={styles.button3}
+                    ><Text style={styles.buttonTextWhite}>Set Next</Text></TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setIsVisible(false)}
+                        style={styles.button3}
+                    ><Text style={styles.buttonTextWhite}>Add 10 Seconds</Text></TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setIsVisible(false)}
+                        style={styles.button2}
+                    ><Text style={styles.buttonText}>Cancel</Text></TouchableOpacity>
 
                 </View>
             </Overlay>
             <View style={styles.sub}>
-                <TouchableOpacity
-                    onPress={() => setIsVisible(true)}
-                    style={styles.button}
-                >
-                    <Image
-                        source={require("../../../../assets/images/avatar1.jpg")}
-                        resizeMode=""
-                        style={styles.image}
-                    />
-                    <View
-                        style={{
-                            flex: 1,
-                            flexDirection: "row",
-                        }}
-                    >
-                        <Text style={styles.text8}>Speaker Name</Text>
-                    </View>
-                    <Text style={styles.text7}>1:02PM</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => console.log('the speaker was pressed')}
-                    style={styles.button}
-                >
-                    <Image
-                        source={require("../../../../assets/images/avatar.png")}
-                        resizeMode=""
-                        style={styles.image}
-                    />
-                    <View
-                        style={{
-                            flex: 1,
-                            flexDirection: "row",
-                        }}
-                    >
-                        <Text style={styles.text8}>Speaker Name</Text>
-                    </View>
-                    <Text style={styles.text7}>1:02PM</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => console.log('the speaker was pressed')}
-                    style={styles.button}
-                >
-                    <Image
-                        source={require("../../../../assets/images/avatar1.jpg")}
-                        resizeMode=""
-                        style={styles.image}
-                    />
-                    <View
-                        style={{
-                            flex: 1,
-                            flexDirection: "row",
-                        }}
-                    >
-                        <Text style={styles.text8}>Speaker Name</Text>
-                    </View>
-                    <Text style={styles.text7}>1:02PM</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => console.log('the speaker was pressed')}
-                    style={styles.button}
-                >
-                    <Image
-                        source={require("../../../../assets/images/avatar.png")}
-                        resizeMode=""
-                        style={styles.image}
-                    />
-                    <View
-                        style={{
-                            flex: 1,
-                            flexDirection: "row",
-                        }}
-                    >
-                        <Text style={styles.text8}>Speaker Name</Text>
-                    </View>
-                    <Text style={styles.text7}>1:02PM</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => console.log('the speaker was pressed')}
-                    style={styles.button}
-                >
-                    <Image
-                        source={require("../../../../assets/images/avatar1.jpg")}
-                        resizeMode=""
-                        style={styles.image}
-                    />
-                    <View
-                        style={{
-                            flex: 1,
-                            flexDirection: "row",
-                        }}
-                    >
-                        <Text style={styles.text8}>Speaker Name</Text>
-                    </View>
-                    <Text style={styles.text7}>1:02PM</Text>
-                </TouchableOpacity>
+                {console.log('speakers in items', speakers)}
+                {
+                    speakers.length > 0 && speakers.map((item, i) => (
+                        <SpeakerItem changeColor={changeColor} key={i} speaker={item} />
+                    ))
+                }
+
 
             </View>
         </View>
@@ -169,7 +85,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.6,
         shadowRadius: 6,
     },
-    
+
     button3: {
         height: 40,
         minWidth: 200,
