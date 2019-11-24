@@ -1,1 +1,1 @@
-export { Home, OrganizationList, Login, Register } from './views';
+export { Home, OrganizationList, Login, Register, SpeakerQueue } from './views';

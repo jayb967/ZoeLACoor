@@ -34,6 +34,10 @@ const OrganizationList = ({ navigation }) => {
         setOrganizations(orgs)
     }
 
+    const popOrg = () =>{
+        // navigation.popToTop();
+    }
+
     const doesContainUser = (org) => {
         if (org.users.length == 0) return false
         let present = false
@@ -47,6 +51,13 @@ const OrganizationList = ({ navigation }) => {
     }
 
     async function handleAddUser(org) {
+       
+        if(!user) {
+            console.log('there is no user to add to the org', org)
+            globalActions.user.setOrganizationID(org.id)
+            navigation.pop();
+            return
+        }
         let users = org.users || []
         const uid = Firebase.shared.uid
         if (users.includes(uid)) {
@@ -86,7 +97,7 @@ const OrganizationList = ({ navigation }) => {
                 <ScrollView
                     contentInsetAdjustmentBehavior="automatic"
                     style={styles.scrollView}>
-                    <Header navigation={navigation} />
+                    <Header navigation={navigation} popOrg={popOrg}/>
                     <View >
                         {organizations.length < 1
                             ? <ActivityIndicator size="large" style={styles.spinner} color='white' />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Home, OrganizationList, Splash, Login, Register } from './src'
+import { Home, OrganizationList, Splash, Login, Register, SpeakerQueue } from './src'
 import { NavigationNativeContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Firebase } from '@api';
@@ -15,10 +15,11 @@ const SpeakerMainStack = createStackNavigator();
 
 const AppMain = () => {
   const [isLoading, setIsLoading] = React.useState(true);
-  // const [role, setRole] = useState('')
+  const [role, setRole] = useState('')
   const [register, setRegister] = useState(false)
   // const [user, setUser] = useState(null)
   const [globalState, globalActions] = useGlobal();
+  const [authed, setAuthed] = useState(false)
   const { user, setOrganization } = globalState
 
   useEffect(() => {
@@ -26,11 +27,14 @@ const AppMain = () => {
     function auth() {
       firebase.auth().onAuthStateChanged(async user => {
         if (!user) {
-          console.log('the user was signed out!')
+          // console.log('the user was signed out!')
           setRegister(false)
+          setAuthed(false)
           // setUser(null)
           globalActions.user.setUser(null)
-          // setRole('')
+          setRole('')
+        }else if (user){
+          setAuthed(true)
         }
       });
     }
@@ -39,21 +43,23 @@ const AppMain = () => {
       .then(user => {
 
         if (!user) {
+          globalActions.user.setUser(null)
           setIsLoading(false)
+          setRole('')
           return
         }
         globalActions.user.setUser(user)
         if (user.setOrganization) {
           globalActions.user.setOrganization(true)
         }
-        // setRole(user.role)
+        setRole(user.role)
         // setUser(user)
         isLoading && setIsLoading(false)
       })
       .catch(err => alert(`An error occurred ${err}`));
 
     auth()
-  }, [])
+  }, [authed])
 
   const handlesetUser = (user) => {
     // setUser(user)
@@ -97,15 +103,17 @@ const AppMain = () => {
         mode="modal"
         initialRouteName={user ? "Home" : "Login"}
       >
-
+        {/* {console.log('--this is the user role', role)} */}
         {/* <Stack.Screen name="Main" component={HomeStack} /> */}
         {/* {console.log('this is the user', user)} */}
         {
           user === null
-            ? <Stack.Screen name="Login">
+            ? <><Stack.Screen name="Login">
               {(props) => <Login {...props} registerRoute={(val) => handleRegisterRoute(val)} onSignIn={handlesetUser} />}
             </Stack.Screen>
-
+              <Stack.Screen name="Organization1" component={OrganizationList} />
+              <Stack.Screen name="SpeakerQueue" signedInuser={user} component={SpeakerQueue} />
+            </>
             : <>
               <Stack.Screen name="Home">
                 {(props) => <Home {...props} signedInuser={user} registerRoute={(val) => handleRegisterRoute(val)} onSignIn={handlesetUser} />}
@@ -117,6 +125,8 @@ const AppMain = () => {
               <Stack.Screen name="Speaker" component={SpeakerStack} />
 
               <Stack.Screen name="Organization1" component={OrganizationList} />
+              <Stack.Screen name="SpeakerQueue" signedInuser={user} component={SpeakerQueue} />
+
             </>
         }
 

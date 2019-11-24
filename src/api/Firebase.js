@@ -32,6 +32,22 @@ class Firebase {
     return
   }
 
+  async signInAnonymously() {
+    try {
+      await firebase.auth().signInAnonymously();
+      console.log('signed in anonymous')
+    } catch (e) {
+      switch (e.code) {
+        case 'auth/operation-not-allowed':
+          console.log('Enable anonymous in your firebase console.');
+          break;
+        default:
+          console.error(e);
+          break;
+      }
+    }
+  }
+
   async checkCurrentUser() {
     return this.userCollection.doc(this.uid)
       .get()
@@ -41,6 +57,7 @@ class Firebase {
           return Promise.reject(new Error('User does not exist!'))
         } else {
           const user = doc.data()
+          console.log('this is the user that was found', user)
           // resolve(user)
           return user
 
@@ -113,17 +130,20 @@ class Firebase {
 
   confirmCode = (codeInput, confirmResult) => {
     if (confirmResult && codeInput.length) {
+      const confirma = confirmResult
       return new Promise(resolve => {
-        confirmResult.confirm(codeInput)
+        confirma.confirm(codeInput)
           .then((user) => {
 
             if (user) {
               resolve(user)
             } else {
+              console.log('there was an error 125', err)
               resolve(error + 'error')
             }
           })
           .catch(err => {
+            console.log('there was an error 130', err)
             resolve(err + 'error')
           })
       });

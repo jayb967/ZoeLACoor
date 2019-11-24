@@ -5,14 +5,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Firebase } from '@api';
 import { useGlobal } from '@store'
 
-const HeaderTitle = ({ navigation }) => {
+const HeaderTitle = ({ navigation, popOrg }) => {
   const [globalState, globalActions] = useGlobal();
   // const { user, setOrganization } = globalState
 
   const handleLogout = async () => {
     Firebase.shared.signOut()
     globalActions.user.setUser(null)
-    navigation.popToTop()
+    popOrg && popOrg()
   }
   return (<Header
     ViewComponent={LinearGradient} // Don't forget this!

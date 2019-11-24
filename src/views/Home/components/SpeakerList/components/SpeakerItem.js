@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native";
 import { ListItem } from 'react-native-elements';
 import LinearGradient from 'react-native-linear-gradient';
 import TouchableScale from 'react-native-touchable-scale';
+import { Images } from '@assets';
 
 
 const SpeakerItem = props => {
@@ -26,11 +27,11 @@ const SpeakerItem = props => {
             }}
             ViewComponent={LinearGradient} // Only if no expo
             style={styles.button}
-            // leftAvatar={{ rounded: true, source: { uri: '' } }}
-            title={speaker == 'red' ? 'Idle' : speaker == 'yellow' ? 'Standby' : 'Walk out now'}
+            leftAvatar={{ rounded: true, source: Images[speaker]  }}
+            title={speaker == 'red' ? 'STOP' : speaker == 'yellow' ? 'STANDBY' : 'SEND NOW'}
             titleStyle={{ color: 'white', fontWeight: 'bold' }}
             subtitleStyle={{ color: 'white' }}
-            // subtitle={speaker.status}
+            // subtitle="Some other shit"
             chevron={{ color: 'white' }}
         />)
 

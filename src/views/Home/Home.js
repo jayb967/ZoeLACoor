@@ -42,6 +42,7 @@ const Home = ({ navigation, signedInuser }) => {
         isFocused && Firebase.shared.checkCurrentUser()
             .then(user => {
                 if (!user) {
+                    globalActions.user.setUser(null)
                     return
                 }
                 globalActions.user.setUser(user)
@@ -76,14 +77,9 @@ const Home = ({ navigation, signedInuser }) => {
     //     const orgs = await Firebase.shared.retrieveSpeakers()
     //     setSpeakers(orgs)
     // }
-
-    // async function getColor() {
-    //     const color = await Firebase.shared.retrieveColor()
-    //     setColor(color)
-    // }
-
+    
     async function handleNameChange(nam) {
-        orgID && await Firebase.shared.updateOrganization(orgID, {name: nam || '', color: 'black'})
+        orgID && await Firebase.shared.updateOrganization(orgID, {name: nam || '', color: 'red'})
         // setColor(color)
     }
 
@@ -139,8 +135,12 @@ const styles = StyleSheet.create({
         top: 86,
         left: 0,
         width: 859,
-        height: 757,
+        height: '100%',
         position: "absolute"
+    },
+    scrollView: {
+        height: '100%',
+        width: '100%'
     },
     body: {
         // backgroundColor: "linear-gradient(#000, #FFF);",

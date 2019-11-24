@@ -16,7 +16,7 @@ import { Firebase } from '@api';
 
 import { w, h, totalSize } from '../../helpers/Dimension';
 
-const Login = ({ registerRoute, onSignIn }) => {
+const Login = ({ navigation, registerRoute, onSignIn }) => {
 
     const input = React.createRef();
     const [phoneNumber, setPhoneNumber] = useState('')
@@ -94,7 +94,7 @@ const Login = ({ registerRoute, onSignIn }) => {
             <LinearGradient colors={['black', 'gray']} style={styles.gradientBG}>
                 <View style={styles.container}>
                     <Image style={styles.icon} resizeMode="contain" source={Images.logo} />
-                    <Text style={styles.textSlogan}>Stage Countdown</Text>
+                    <Text style={styles.textSlogan}>Stage Cue</Text>
 
                     <Text style={styles.message}>{message}</Text>
                     <Input
@@ -121,15 +121,16 @@ const Login = ({ registerRoute, onSignIn }) => {
                             disabled={isCode ? phoneNumber.length < 6 : false}
                             onPress={handleClick}
                         >
-                            <Text style={styles.loginText}>{isCode ? 'Confirm Code' : 'Continue'}</Text>
+                            <Text style={styles.loginText}>{isCode ? 'Confirm Code' : 'Coordinator Log In'}</Text>
                         </TouchableOpacity>}
 
                         <TouchableOpacity
                             style={styles.loginButton}
                             // disabled={isCode ? phoneNumber.length < 6 : false}
                             // onPress={handleClick}
+                            onPress={() => navigation.push('SpeakerQueue')}
                         >
-                            <Text style={styles.loginText}>I am a Speaker</Text>
+                            <Text style={styles.loginText}>Stage Hands</Text>
                         </TouchableOpacity>
 
 
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
         marginTop: h(2),
         marginBottom: h(10),
         color: 'white',
-        fontSize: 18,
+        fontSize: 35,
         fontWeight: '300'
     }
 })

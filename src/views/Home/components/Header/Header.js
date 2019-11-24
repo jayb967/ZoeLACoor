@@ -22,7 +22,7 @@ const HeaderTitle = ({ navigation }) => {
       name='eye'
       type='font-awesome'
       color='white'
-      onPress={() => console.log('plus sign pressed!')} />}
+      onPress={() => navigation.push('SpeakerQueue')} />}
       rightContainerStyle={{marginRight: 30}}
     centerComponent={{ text: 'ZOE T-Minus', style: { fontSize: 23, color: '#fff' } }}
     containerStyle={{

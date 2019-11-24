@@ -2,9 +2,12 @@ const Images = {
     avatar: require("./avatar.png"),
     avater2: require("./avatar1.jpg"),
 
-    logo: require("./zoelong_white.png"),
+    logo: require("./logo.png"),
     logoBlack: require("./zoelong.png"),
     user: require("./user.png"),
+    red: require("./red.png"),
+    yellow: require("./yellow.png"),
+    green: require("./green.png"),
 
     icons:{
         // closex: require("@images/close.png"),
